@@ -12,6 +12,6 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
-    "puppeteer": "^20.1.1"
+    "selenium-webdriver": "^4.9.1"
   }
 }
