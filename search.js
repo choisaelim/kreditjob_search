@@ -1,38 +1,53 @@
 // selenium import
 const { Builder, By, until, Key } = require('selenium-webdriver');
 
-const url = 'https://kreditjob.com';
+const url = 'https://kreditjob.com/company/cd99815e9f642bf16e37480bee30814b41bf8a50';
 
 //첫 번째 API 
-const findCompanys = async () => {
+const findCompanyList = async () => {
+    //브라우저 설정
     let driver = await new Builder('./chromedriver').forBrowser('chrome').build();
+    //url 접속
     await driver.get(url);
     // const searchSelector = 'input.hmxpFE';
+    const searchDivXpath = '//*[@id="__next"]/div/nav/div/div[2]/div';
     const searchPlaceHolder = "//input[contains(@placeholder,'기업을 검색')]";
-    // await driver.findElement(By.name('q')).sendKeys('webdriver', Key.RETURN);
+    const searchInputUpper = "//input[contains(@placeholder,'기업을 검색')]/following-sibling::div/ul";
 
-    // await driver.sleep(3000);
-    // await driver.wait(until.elementLocated(By.xpath(searchPlaceHolder)));
-    // await driver.findElement(By.xpath(searchPlaceHolder));
+    //검색창 대기
+    await driver.wait(until.elementLocated(By.xpath(searchDivXpath)));
+    //검색창 클릭해서 input 활성화
+    const searchDiv = await driver.findElement(By.xpath(searchDivXpath));
+    await searchDiv.click();
 
-    await driver.wait(until.elementLocated(By.xpath(searchPlaceHolder)));
-    const searchInput = await driver.findElement(By.xpath(searchPlaceHolder));
-    searchInput.sendKeys('스페이드컴퍼니', Key.ENTER);
+    //검색창에 회사명 입력
+    const searchInputs = await driver.findElements(By.xpath(searchPlaceHolder));
+    if(searchInputs.length > 0){
+        const searchTopInput = searchInputs[0];
+        await searchTopInput.sendKeys('스페이드컴퍼니', Key.ENTER);
 
-    await driver.sleep(3500);
+        await searchTopInput.click();
 
-    await driver.close();
-    //__next
-    //.sendKeys('스페이드컴퍼니', Key.RETURN);
-    // await searchTag.sendKeys(keyword, Key.ENTER);
+        //회사명, 위치 드롭다운 내용을 리스트로 출력
+        const searchList = await driver.findElement(By.xpath(searchInputUpper));
+        await driver.sleep(1000);
+        const searchItems = await searchList.findElements(By.css('li'));
+
+        if(searchItems.length == 0){
+            console.log('검색 결과가 없습니다');
+        }
+        for(let i = 0 ; i < searchItems.length ; i++){
+            let item = await searchItems[i].getText();
+        }
+
+    }
+
+    // await driver.close();
+
+    
 }
-//브라우저 설정
 
-//url 접속
 
-//검색창에 회사명 입력
-
-//회사명, 위치 드롭다운 내용을 리스트로 출력
 
 //두 번째 API
 
@@ -42,6 +57,6 @@ const findCompanys = async () => {
 
 //Job담 있으면 Job담 조회
 (async ()=>{
-    await findCompanys();
+    await findCompanyList();
 })();
  
