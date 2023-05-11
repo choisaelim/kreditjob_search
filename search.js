@@ -1,3 +1,4 @@
+
 // selenium import
 const { Builder, By, until, Key } = require('selenium-webdriver');
 
@@ -58,5 +59,5 @@ const findCompanyList = async () => {
 //Job담 있으면 Job담 조회
 (async ()=>{
     await findCompanyList();
-})();
+})(); 
  
