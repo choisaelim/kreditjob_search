@@ -1,15 +1,28 @@
 const Koa = require('koa');
+const Router = require('koa-router');
 const app = new Koa();
+
+const router = new Router();
+
+router.get('/', (ctx, next) => {
+    ctx.body = '홈';
+});
+
+const api = require('./routes/searchapi.js');
+
+router.use('/api', api.routes());
+
+app.use(router.routes());
+app.use(router.allowedMethods());
+
+
 
 app.listen(3000, () => {
     console.log('heurm server is listening to port 3000');
 });
 
-// const Koa = require('koa');
-// const KoaBody = require('koa-body');
-// const app = new Koa();
 
-// app.use(KoaBody);
+
 
 // // const searchRouter = require('./routes/searchapi');
 // // app.use(searchRouter.routes());

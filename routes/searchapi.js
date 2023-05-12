@@ -1,4 +1,5 @@
 const Router = require('koa-router');
+
 const router = new Router({
     prefix: '/search'
 });
@@ -15,5 +16,5 @@ router.get('/', (ctx, next) => {
 
     next();
 });
-
 module.exports = router;
+
