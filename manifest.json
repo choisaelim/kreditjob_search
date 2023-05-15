@@ -1,0 +1,11 @@
+{
+    "name": "Company search extension",
+    "description": "kreditjob company info search extension",
+    "version": "0.1",
+    "permissions": ["contextMenus"],
+    "background": {
+      "service_worker": "context.js"
+    },
+    "manifest_version": 3
+  }
+  
