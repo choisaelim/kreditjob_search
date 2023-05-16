@@ -1,10 +1,14 @@
 {
-    "name": "Company search extension",
+    "name": "회사 검색하기",
     "description": "kreditjob company info search extension",
-    "version": "0.1",
-    "permissions": ["contextMenus"],
+    "version": "0.11",
+    "permissions": ["contextMenus", "storage"],
     "background": {
-      "service_worker": "context.js"
+      "service_worker": "context.js",
+      "type": "module"
+    },
+    "action": {
+      "default_popup": "popup.html"
     },
     "manifest_version": 3
   }
