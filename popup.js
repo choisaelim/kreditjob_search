@@ -1,4 +1,32 @@
 
+ function getSelectionText(){
+    var selectedText = window.getSelection().toString().trim();
+
+    if (selectedText !== "") {
+        chrome.storage.sync.set({ companyName: selectedText }, () => {
+        console.log('compName in popup ' + selectedText);
+        });
+    }
+ }
+
+ //브라우저가 html을 읽고 dom 트리 완성 즉시 발생
+ document.addEventListener('DOMContentLoaded', function () {
+    //팝업 창 열었을 때 
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        // Use the Scripting API to execute a script
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+        //   args: [color],
+          func: getSelectionText
+        });
+    });
+    
+    chrome.storage.sync.get('companyName', ({ compName }) => {
+        console.log(document.getElementById('info'));
+        document.getElementById('info').innerHTML = '회사명 : ' + compName;
+      });
+
+  });
 
 // createForm().catch(console.error);
 async function search(){
@@ -7,7 +35,6 @@ async function search(){
     if(companyName != null && companyName != ''){
         infoView.appendChild(companyName);
     }
-    
 }
 // async function createForm() {
 //   const { enabledTlds = Object.keys(tldLocales) } =
