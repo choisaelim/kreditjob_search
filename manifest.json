@@ -4,7 +4,8 @@
     "version": "0.11",
     "permissions": ["contextMenus", "activeTab", "scripting","storage"],
     "background": {
-      "service_worker": "context.js"
+      "service_worker": "context.js",
+      "type": "module"
     },
     "action": {
       "default_popup": "popup.html"

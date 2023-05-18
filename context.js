@@ -15,11 +15,16 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 //마우스 오른쪽 메뉴 클릭시 이벤트
-chrome.contextMenus.onClicked.addListener((item, tab) => {
+chrome.contextMenus.onClicked.addListener(async (item, tab) => {
   //드래그한 회사이름 storage에 companyName으로 저장
-  chrome.storage.sync.set({ companyName: item.selectionText }, () => {
+  await chrome.storage.sync.set({ companyName: item.selectionText }, () => {
     console.log('compName in context ' + item.selectionText);
   });
+});
+
+chrome.storage.onChanged.addListener(async ({ companyName }) => {
+  const popup = await chrome.action.getPopup({});
+  console.log(companyName.newValue);
 });
 
 
