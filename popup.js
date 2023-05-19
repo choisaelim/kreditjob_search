@@ -1,13 +1,11 @@
 
- async function setSelectionText(){
-    var selectedText = window.getSelection().toString().trim();
-    console.log('compName in popup ' + selectedText);
-    if (selectedText !== "") {
-        await chrome.storage.sync.set({ companyName: selectedText }, () => {
-        
-        });
-    }
- }
+//  async function setSelectionText(){
+//     var selectedText = window.getSelection().toString().trim();
+//     console.log('compName in popup ' + selectedText);
+//     if (selectedText !== "") {
+//         await chrome.storage.sync.set({ companyName: selectedText });
+//     }
+//  }
 
  async function getSelectionText(){
     await chrome.storage.sync.get("companyName", async function(items) {
@@ -18,11 +16,24 @@
       });
  }
 
-document.body.onload = async function() {
-    await setSelectionText();
-    await getSelectionText();
-    
+ document
+  .getElementById('onclicked-button')
+  .addEventListener('click', async () => {
+    await test1();
+  });
+
+async function test1(){
+    let companyName = await chrome.storage.sync.get().companyName;
+    document.getElementById("info").innerText = companyName;
 }
+
+// document.body.onload = async function() {
+//     // await setSelectionText();
+//     // await getSelectionText();
+//     await test1();
+//     await test2();
+    
+// }
 
 //  chrome.storage.onChanged.addListener(({ companyName }) => {
 //     console.log(companyName);

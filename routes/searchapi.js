@@ -5,7 +5,8 @@ const router = new Router({
 });
 
 let companyList = [
-    {id: 0, compName: "금병영", compAddr: "서울, 강동구"}
+    {id: '1', company: "금병영 / 서울, 강동구", link : ""},
+    {id: '2', company: "테스트 / 서울, 강북구", link : ""}
 ]
 
 router.get('/', (ctx, next) => {
