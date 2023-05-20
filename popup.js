@@ -6,6 +6,12 @@
 //         await chrome.storage.sync.set({ companyName: selectedText });
 //     }
 //  }
+async function getCompanys(){
+    const companysUrl = "http://localhost:3000/api/search";
+    const res = await fetch(companysUrl);
+    const data = await res.json();
+    console.log(data);
+}
 
  async function getSelectionText(){
     await chrome.storage.sync.get("companyName", async function(items) {
@@ -19,12 +25,14 @@
  document
   .getElementById('onclicked-button')
   .addEventListener('click', async () => {
-    await test1();
+    await updateCompanyInfo();
   });
 
-async function test1(){
+async function updateCompanyInfo(){
     let companyName = await chrome.storage.sync.get().companyName;
     document.getElementById("info").innerText = companyName;
+
+    getCompanys().catch(console.error);
 }
 
 // document.body.onload = async function() {
