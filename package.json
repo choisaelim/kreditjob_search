@@ -5,9 +5,11 @@
   "scripts": {
     "start": "node app.js",
     "start:dev": "nodemon --watch routes/ app.js"
-},
+  },
   "dependencies": {
+    "@koa/cors": "^4.0.0",
     "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
     "debug": "~2.6.9",
     "http-errors": "~1.6.3",
     "jade": "^0.29.0",
