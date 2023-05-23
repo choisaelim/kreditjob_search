@@ -37,7 +37,7 @@ async function updateCompanyInfo() {
             const companyList = await getCompanys().catch(console.error);
             for (var i = 0; i < companyList.length; i++) {
                 var compNameOption = document.createElement("option");
-                compNameOption.value = companyList[i].id;
+                compNameOption.value = i;
                 compNameOption.text = companyList[i].company;
                 compNameSel.options.add(compNameOption);
             }
