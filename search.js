@@ -4,7 +4,7 @@ const { Builder, By, until, Key } = require("selenium-webdriver");
 const url = "https://kreditjob.com/company/cd99815e9f642bf16e37480bee30814b41bf8a50";
 
 //첫 번째 API
-const findCompanyList = async () => {
+const findCompanyList = async (searchCompName) => {
     //브라우저 설정
     let driver = await new Builder("./chromedriver").forBrowser("chrome").build();
     //url 접속
@@ -14,6 +14,8 @@ const findCompanyList = async () => {
     const searchPlaceHolder = "//input[contains(@placeholder,'기업을 검색')]";
     const searchInputUpper =
         "//input[contains(@placeholder,'기업을 검색')]/following-sibling::div/ul";
+
+    if (searchCompName == null) searchCompName = "스페이드컴퍼니";
 
     let companyList = new Array();
     //검색창 대기
@@ -26,13 +28,13 @@ const findCompanyList = async () => {
     const searchInputs = await driver.findElements(By.xpath(searchPlaceHolder));
     if (searchInputs.length > 0) {
         const searchTopInput = searchInputs[0];
-        await searchTopInput.sendKeys("스페이드컴퍼니", Key.ENTER);
+        await searchTopInput.sendKeys(searchCompName, Key.ENTER);
 
         await searchTopInput.click();
 
         //회사명, 위치 드롭다운 내용을 리스트로 출력
-        const searchList = await driver.findElement(By.xpath(searchInputUpper));
         await driver.sleep(1000);
+        const searchList = await driver.findElement(By.xpath(searchInputUpper));
         const searchItems = await searchList.findElements(By.css("li"));
 
         if (searchItems.length == 0) {
@@ -43,7 +45,7 @@ const findCompanyList = async () => {
             companyList.push(item);
         }
     }
-    // await driver.close();
+    await driver.close();
     return companyList;
 };
 
@@ -57,3 +59,5 @@ const findCompanyList = async () => {
 (async () => {
     await findCompanyList();
 })();
+
+module.exports = findCompanyList;

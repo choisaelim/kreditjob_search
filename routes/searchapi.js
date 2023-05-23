@@ -1,21 +1,23 @@
-const Router = require('koa-router');
+const Router = require("koa-router");
+const findCompanyList = require("../search");
 
 const router = new Router({
-    prefix: '/search'
+    prefix: "/search",
 });
 
 let companyList = [
-    {id: '1', company: "금병영 / 서울, 강동구", link : ""},
-    {id: '2', company: "테스트 / 서울, 강북구", link : ""}
-]
+    { id: "1", company: "금병영 / 서울, 강동구", link: "" },
+    { id: "2", company: "테스트 / 서울, 강북구", link: "" },
+];
 
-router.get('/', (ctx, next) => {
+companyList = await findCompanyList();
+
+router.get("/", async (ctx, next) => {
     ctx.body = {
-        status: 'success',
-        companyList: companyList
-    }
+        status: "success",
+        companyList: companyList,
+    };
 
     next();
 });
 module.exports = router;
-
