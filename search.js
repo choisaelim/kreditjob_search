@@ -16,7 +16,7 @@ const findCompanyList = async (searchCompName, index) => {
         "//input[contains(@placeholder,'기업을 검색')]/following-sibling::div/ul";
     const modalcloseXpath = "//*[@class='modalContainer']//button[1]";
 
-    if (searchCompName == null) searchCompName = "스페이드컴퍼니";
+    if (searchCompName == null) searchCompName = "영림임업";
 
     let companyList = new Array();
     //검색창 대기
@@ -48,23 +48,25 @@ const findCompanyList = async (searchCompName, index) => {
             return null;
         }
 
-        for (let i = 0; i < searchItems.length; i++) {
-            let item = await searchItems[i].getText();
-            companyList.push(item);
-        }
+        // for (let i = 0; i < searchItems.length; i++) {
+        //     let item = await searchItems[i].getText();
+        //     companyList.push(item);
+        // }
 
         //회사가 한 개만 나오면 클릭
         if (searchItems.length == 1) {
-            searchItems[0].click();
+            await searchItems[0].click();
 
             const salaryXpath =
-                "//*span[contains(text(), '예상평균연봉')]/parent::div/following-sibling::div//span[1]";
+                "//*[@id='company-summary']//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
+
             await driver.wait(until.elementLocated(By.xpath(salaryXpath)));
             const salary = await driver.findElement(By.xpath(salaryXpath));
-            return salary.getText();
+            const result = await salary.getText();
+            return result;
         }
     }
-    await driver.close();
+
     return companyList;
 };
 
