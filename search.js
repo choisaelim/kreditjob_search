@@ -59,10 +59,31 @@ const findCompanyList = async (searchCompName, index) => {
 
             const salaryXpath =
                 "//*[@id='company-summary']//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
+            const workerXpath =
+                "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[1]";
+            const exitXpath =
+                "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[2]";
+            const inXpath =
+                "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div/div[2]/div[2]/span[2]";
 
             await driver.wait(until.elementLocated(By.xpath(salaryXpath)));
-            const salary = await driver.findElement(By.xpath(salaryXpath));
-            const result = await salary.getText();
+            const salary = await driver.findElement(By.xpath(salaryXpath)).getText();
+            let result = {};
+            if (salary == "비공개") {
+                result = "블락 기업입니다.";
+            } else {
+                const totalWorker = await driver.findElement(By.xpath(workerXpath)).getText();
+                const exWorker = await driver.findElement(By.xpath(exitXpath)).getText();
+                const inWorker = await driver.findElement(By.xpath(inXpath)).getText();
+
+                result = {
+                    salary: salary,
+                    totalWorker: totalWorker,
+                    exWorker: exWorker,
+                    inWorker: inWorker,
+                };
+            }
+
             return result;
         }
     }
