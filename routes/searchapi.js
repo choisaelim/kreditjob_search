@@ -13,12 +13,10 @@ let companyList = [
 
 //셀레니움으로 검색해서 나온 회사목록 return
 router.get("/", async (ctx, next) => {
-    const { name } = ctx.query;
-    companyList = await findCompanyList(name);
-    ctx.body = {
-        status: "success",
-        companyList: companyList,
-    };
+    const { name, index } = ctx.query;
+    result = await findCompanyList(name, index);
+
+    ctx.body = result;
 
     next();
 });

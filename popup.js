@@ -1,12 +1,12 @@
-async function getCompanys() {
-    const companysUrl = "http://localhost:3000/api/search";
+async function getCompanys(name, index) {
+    const companysUrl = "http://localhost:3000/api/search?name" + name + "&index=" + index;
     const res = await fetch(companysUrl);
     const data = await res.json();
     if (data.status === "success") {
         console.log(data.companyList);
         return data.companyList;
     } else {
-        return null;
+        return "검색 결과가 없습니다";
     }
 }
 
@@ -34,7 +34,13 @@ async function updateCompanyInfo() {
             const compNameSel = document.createElement("select");
             content.appendChild(compNameSel);
             //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
-            const companyList = await getCompanys().catch(console.error);
+            const companyList = await getCompanys(items.companyName, null).catch(console.error);
+
+            //검색 결과 0개 > 회사 정보 없음
+            //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
+            //검색 결과가 1개 > 바로 회사 정보 불러옴, 블락기업이면 블락이라고 표시
+
+            debugger;
             for (var i = 0; i < companyList.length; i++) {
                 var compNameOption = document.createElement("option");
                 compNameOption.value = i;
