@@ -17,7 +17,8 @@ const findCompanyList = async (searchCompName, index) => {
         "//input[contains(@placeholder,'기업을 검색')]/following-sibling::div/ul";
     const modalcloseXpath = "//*[@class='modalContainer']//button[1]";
 
-    if (searchCompName == null) searchCompName = "영림임업";
+    if (searchCompName == null || searchCompName == undefined || searchCompName == "")
+        searchCompName = "영림임업";
 
     let result = {
         status: SEARCH_FAIL,
@@ -49,69 +50,80 @@ const findCompanyList = async (searchCompName, index) => {
             const searchItems = await searchList.findElements(By.css("li"));
 
             if (searchItems.length == 0) {
-                console.log("검색 결과가 없습니다");
-                return null;
+                return result;
             }
 
-            //회사가 한 개만 나오면 클릭
-            if (searchItems.length == 1) {
-                await searchItems[0].click();
-
-                const yearXpath =
-                    "//*[@id='__next']/div/main/section/section/div[1]/div[2]/div/div[2]/span[1]";
-
-                const salaryXpath =
-                    "//*[@id='company-summary']//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
-                const workerXpath =
-                    "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[1]";
-                const exitXpath =
-                    "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[2]";
-                const inXpath =
-                    "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div/div[2]/div[2]/span[2]";
-
-                await driver.wait(until.elementLocated(By.xpath(salaryXpath)));
-                const year = await driver.findElement(By.xpath(yearXpath)).getText();
-                const salary = await driver.findElement(By.xpath(salaryXpath)).getText();
-
-                if (salary == "비공개") {
-                    result = {
-                        status: SEARCH_BLOCK,
-                    };
-                } else {
-                    const totalWorker = await driver.findElement(By.xpath(workerXpath)).getText();
-                    const exWorker = await driver.findElement(By.xpath(exitXpath)).getText();
-                    const inWorker = await driver.findElement(By.xpath(inXpath)).getText();
-                    result = {
-                        status: SEARCH_SUCCESS,
-                        result: {
-                            salary: salary,
-                            totalWorker: totalWorker,
-                            exWorker: exWorker,
-                            inWorker: inWorker,
-                            year: year,
-                        },
-                    };
+            //인덱스가 있으면 인덱스 클릭
+            //인덱스 없고 리스트 > 1 이면 그냥 companyList return
+            //리스트 1이면 0 클릭
+            if (searchItems.length > 1 && isNaN(index)) {
+                //index 없는데 searchItem 여러개(같은 이름 회사 여러개)
+                let companyList = new Array();
+                for (let i = 0; i < searchItems.length; i++) {
+                    let item = await searchItems[i].getText();
+                    companyList.push({
+                        id: i,
+                        company: item,
+                    });
                 }
-
+                result = {
+                    status: SEARCH_LIST,
+                    result: companyList,
+                };
+                driver.close();
                 return result;
             } else {
-                //검색 결과 여러개
-                //인덱스 없으면
-                if (index != null && index != undefined) {
-                } else {
-                    let companyList = new Array();
-                    for (let i = 0; i < searchItems.length; i++) {
-                        let item = await searchItems[i].getText();
-                        companyList.push(item);
+                if (searchItems.length == 1) {
+                    await searchItems[0].click();
+                } else if (!isNaN(index)) {
+                    await searchItems[index].click();
+                }
+
+                if (searchItems.length == 1 || !isNaN(index)) {
+                    const yearXpath =
+                        "//*[@id='__next']/div/main/section/section/div[1]/div[2]/div/div[2]/span[1]";
+
+                    const salaryXpath =
+                        "//*[@id='company-summary']//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
+                    const workerXpath =
+                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[1]";
+                    const exitXpath =
+                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[2]";
+                    const inXpath =
+                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div/div[2]/div[2]/span[2]";
+
+                    await driver.wait(until.elementLocated(By.xpath(salaryXpath)));
+                    const year = await driver.findElement(By.xpath(yearXpath)).getText();
+                    const salary = await driver.findElement(By.xpath(salaryXpath)).getText();
+
+                    if (salary == "비공개") {
+                        result = {
+                            status: SEARCH_BLOCK,
+                        };
+                    } else {
+                        const totalWorker = await driver
+                            .findElement(By.xpath(workerXpath))
+                            .getText();
+                        const exWorker = await driver.findElement(By.xpath(exitXpath)).getText();
+                        const inWorker = await driver.findElement(By.xpath(inXpath)).getText();
+                        result = {
+                            status: SEARCH_SUCCESS,
+                            result: {
+                                salary: salary,
+                                totalWorker: totalWorker,
+                                exWorker: exWorker,
+                                inWorker: inWorker,
+                                year: year,
+                            },
+                        };
                     }
-                    result = {
-                        status: SEARCH_LIST,
-                        result: companyList,
-                    };
+                    driver.close();
+                    return result;
                 }
             }
         }
     } catch (error) {
+        driver.close();
         return result;
     }
 };

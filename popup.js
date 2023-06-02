@@ -1,14 +1,20 @@
 async function getCompanys(name, index) {
-    const companysUrl = "http://localhost:3000/api/search?name" + name + "&index=" + index;
+    const companysUrl = "http://localhost:3000/api/search?name=" + name + "&index=" + index;
     const res = await fetch(companysUrl);
     const data = await res.json();
-    if (data.status === "success") {
-        console.log(data.companyList);
-        return data.companyList;
-    } else {
-        return "검색 결과가 없습니다";
-    }
+
+    // if (data.status === "success") {
+    //     console.log(data.companyList);
+    //     return data.companyList;
+    // } else {
+    //     return "검색 결과가 없습니다";
+    // }
+    return data;
 }
+
+document.body.onload = async function () {
+    await updateCompanyInfo();
+};
 
 document.getElementById("onclicked-button").addEventListener("click", async () => {
     await updateCompanyInfo();
@@ -31,21 +37,57 @@ async function updateCompanyInfo() {
             content.appendChild(compNameDiv);
 
             //콤보박스 생성
-            const compNameSel = document.createElement("select");
-            content.appendChild(compNameSel);
+
+            debugger;
             //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
-            const companyList = await getCompanys(items.companyName, null).catch(console.error);
+            const searchResult = await getCompanys(items.companyName, null).catch(console.error);
 
             //검색 결과 0개 > 회사 정보 없음
             //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
             //검색 결과가 1개 > 바로 회사 정보 불러옴, 블락기업이면 블락이라고 표시
 
-            debugger;
-            for (var i = 0; i < companyList.length; i++) {
-                var compNameOption = document.createElement("option");
-                compNameOption.value = i;
-                compNameOption.text = companyList[i].company;
-                compNameSel.options.add(compNameOption);
+            let resultMsgDiv = document.createElement("div");
+
+            switch (searchResult.status) {
+                case "SEARCH_FAIL":
+                    resultMsgDiv.innerText = "검색 결과가 없습니다";
+                    content.appendChild(resultMsgDiv);
+                    break;
+                case "SEARCH_BLOCK":
+                    resultMsgDiv.innerText = "비공개 기업입니다";
+                    content.appendChild(resultMsgDiv);
+                    break;
+                case "SEARCH_SUCCESS":
+                    let res = searchResult.result;
+                    let firstLineDiv = document.createElement("div");
+                    let secondLineDiv = document.createElement("div");
+                    firstLineDiv.innerText = "평균연봉 : " + res.salary + " / 연수 : " + res.year;
+                    secondLineDiv.innerText =
+                        "총 인원 : " +
+                        res.totalWorker +
+                        " / 퇴사: " +
+                        res.exWorker +
+                        " / 입사 " +
+                        res.inWorker;
+
+                    content.appendChild(firstLineDiv);
+                    content.appendChild(secondLineDiv);
+
+                    break;
+                case "SEARCH_LIST":
+                    const compNameSel = document.createElement("select");
+
+                    for (var i = 0; i < companyList.length; i++) {
+                        var compNameOption = document.createElement("option");
+                        compNameOption.value = i;
+                        compNameOption.text = companyList[i].company;
+                        compNameSel.options.add(compNameOption);
+                    }
+
+                    content.appendChild(compNameSel);
+                    break;
+                default:
+                    break;
             }
         }
     });
