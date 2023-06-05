@@ -20,6 +20,26 @@ document.getElementById("onclicked-button").addEventListener("click", async () =
     await updateCompanyInfo();
 });
 
+async function getCompanyInfo() {
+    let c = new Promise(function (resolve, reject) {
+        chrome.storage.sync.get("companyName", function (item) {
+            resolve(item.companyName);
+        });
+    });
+    let result = await c;
+    return result;
+}
+
+async function setCompanyInfo(value) {
+    let c = new Promise(function (resolve, reject) {
+        chrome.storage.sync.set({ compInfo: value }, function () {
+            console.log("storage sync set companyList " + value);
+        });
+    });
+    let result = await c;
+    return result;
+}
+
 async function updateCompanyInfo() {
     await chrome.storage.sync.get("companyName", async function (items) {
         if (!chrome.runtime.error) {
@@ -59,6 +79,8 @@ async function updateCompanyInfo() {
                     break;
                 case "SEARCH_SUCCESS":
                     let res = searchResult.result;
+                    //storage 저장
+
                     let firstLineDiv = document.createElement("div");
                     let secondLineDiv = document.createElement("div");
                     firstLineDiv.innerText = "평균연봉 : " + res.salary + " / 연수 : " + res.year;
@@ -76,6 +98,7 @@ async function updateCompanyInfo() {
                     break;
                 case "SEARCH_LIST":
                     const compNameSel = document.createElement("select");
+                    compNameSel.setAttribute("id", "");
 
                     for (var i = 0; i < companyList.length; i++) {
                         var compNameOption = document.createElement("option");
