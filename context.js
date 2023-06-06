@@ -16,34 +16,46 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 //마우스 오른쪽 메뉴 클릭시 이벤트
 chrome.contextMenus.onClicked.addListener(async (item, tab) => {
-    await chrome.storage.sync.get(["compInfo"], async function (items) {
-        if (items != undefined && items != null) {
-            console.log(items.companyName);
-        }
-
-        if (items.companyName == null) {
-            //드래그한 회사이름 storage에 companyName으로 저장
-            await chrome.storage.sync.set(
-                {
-                    companyName: {
-                        name: item.selectionText,
-                        info: {
-                            salary: "3000만원",
-                            totalWorker: "100명",
-                            exWorker: "10명",
-                            inWorker: "10명",
-                            year: "3년",
-                        },
-                    },
-                },
-                () => {
-                    console.log("compName in context " + item.selectionText);
-                }
-            );
-        } else {
-            console.log("data exist");
-        }
+    let map = new Map();
+    console.log(map.get(item.selectionText));
+    map.set(item.selectionText, {
+        salary: "3000만원",
+        totalWorker: "100명",
+        exWorker: "10명",
+        inWorker: "10명",
+        year: "3년",
     });
+
+    console.log(map.get(item.selectionText));
+
+    // await chrome.storage.sync.get(["compInfo"], async function (items) {
+    //     if (items != undefined && items != null) {
+    //         console.log(items.companyName);
+    //     }
+
+    //     if (items.companyName == null) {
+    //         //드래그한 회사이름 storage에 companyName으로 저장
+    //         await chrome.storage.sync.set(
+    //             {
+    //                 companyName: {
+    //                     name: item.selectionText,
+    //                     info: {
+    //                         salary: "3000만원",
+    //                         totalWorker: "100명",
+    //                         exWorker: "10명",
+    //                         inWorker: "10명",
+    //                         year: "3년",
+    //                     },
+    //                 },
+    //             },
+    //             () => {
+    //                 console.log("compName in context " + item.selectionText);
+    //             }
+    //         );
+    //     } else {
+    //         console.log("data exist");
+    //     }
+    // });
 });
 
 chrome.storage.onChanged.addListener(async ({ companyName }) => {

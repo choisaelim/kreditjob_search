@@ -20,20 +20,23 @@ document.getElementById("onclicked-button").addEventListener("click", async () =
     await updateCompanyInfo();
 });
 
+//companyName
+//companyList - 배열
+
 async function getCompanyInfo() {
     let c = new Promise(function (resolve, reject) {
-        chrome.storage.sync.get("companyName", function (item) {
-            resolve(item.companyName);
+        chrome.storage.sync.get("comp", function (item) {
+            resolve(item.comp);
         });
     });
     let result = await c;
     return result;
 }
-
 async function setCompanyInfo(value) {
     let c = new Promise(function (resolve, reject) {
-        chrome.storage.sync.set({ compInfo: value }, function () {
-            console.log("storage sync set companyList " + value);
+        chrome.storage.sync.set({ comp: value }).then(() => {
+            console.log("storage sync set comp " + value);
+            resolve();
         });
     });
     let result = await c;
