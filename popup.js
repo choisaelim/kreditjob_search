@@ -13,7 +13,7 @@ async function getCompanys(name, index) {
 }
 
 document.body.onload = async function () {
-    await updateCompanyInfo();
+    // await updateCompanyInfo();
 };
 
 document.getElementById("onclicked-button").addEventListener("click", async () => {
@@ -42,88 +42,109 @@ async function setCompanyInfo(value) {
     let result = await c;
     return result;
 }
+const setStorageData = (data) =>
+    new Promise((resolve, reject) =>
+        chrome.storage.sync.set(data, () =>
+            chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve()
+        )
+    );
+const getStorageData = (key) =>
+    new Promise((resolve, reject) =>
+        chrome.storage.sync.get(key, (result) =>
+            chrome.runtime.lastError
+                ? reject(Error(chrome.runtime.lastError.message))
+                : resolve(result)
+        )
+    );
+
+// const { data } = await getStorageData("data");
+
+// await setStorageData({ data: [someData] });
 
 async function updateCompanyInfo() {
-    await chrome.storage.sync.get("companyName", async function (items) {
-        if (!chrome.runtime.error) {
-            const info = document.getElementById("info");
-            //이미 생성된 회사 정보가 있으면 지우고 새로 생성
-            if (document.getElementById("popupContent") != null) {
-                info.removeChild(document.getElementById("popupContent"));
+    let { selectedText } = await getStorageData("selectedText");
+    let { exist } = await getStorageData(selectedText);
+
+    debugger;
+    console.log(selectedText);
+
+    const info = document.getElementById("info");
+    //이미 생성된 회사 정보가 있으면 지우고 새로 생성
+    if (document.getElementById("popupContent") != null) {
+        info.removeChild(document.getElementById("popupContent"));
+    }
+    const content = document.createElement("div");
+    content.id = "popupContent";
+    info.appendChild(content);
+    const compNameDiv = document.createElement("div");
+    compNameDiv.innerText = selectedText;
+    //사용자가 마우스로 선택한 회사 이름 표시
+    content.appendChild(compNameDiv);
+
+    //콤보박스 생성
+
+    debugger;
+    //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
+    const searchResult = await getCompanys(selectedText, null).catch(console.error);
+
+    //검색 결과 0개 > 회사 정보 없음
+    //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
+    //검색 결과가 1개 > 바로 회사 정보 불러옴, 블락기업이면 블락이라고 표시
+
+    let resultMsgDiv = document.createElement("div");
+
+    switch (searchResult.status) {
+        case "SEARCH_FAIL":
+            resultMsgDiv.innerText = "검색 결과가 없습니다";
+            content.appendChild(resultMsgDiv);
+            break;
+        case "SEARCH_BLOCK":
+            resultMsgDiv.innerText = "비공개 기업입니다";
+            content.appendChild(resultMsgDiv);
+            break;
+        case "SEARCH_SUCCESS":
+            let res = searchResult.result;
+            //storage 저장
+
+            let firstLineDiv = document.createElement("div");
+            let secondLineDiv = document.createElement("div");
+            firstLineDiv.innerText = "평균연봉 : " + res.salary + " / 연수 : " + res.year;
+            secondLineDiv.innerText =
+                "총 인원 : " +
+                res.totalWorker +
+                " / 퇴사: " +
+                res.exWorker +
+                " / 입사 " +
+                res.inWorker;
+
+            content.appendChild(firstLineDiv);
+            content.appendChild(secondLineDiv);
+            await setStorageData({ [selectedText]: res });
+
+            break;
+        case "SEARCH_LIST":
+            const compNameSel = document.createElement("select");
+            compNameSel.setAttribute("id", "");
+
+            for (var i = 0; i < companyList.length; i++) {
+                var compNameOption = document.createElement("option");
+                compNameOption.value = i;
+                compNameOption.text = companyList[i].company;
+                compNameSel.options.add(compNameOption);
             }
-            const content = document.createElement("div");
-            content.id = "popupContent";
-            info.appendChild(content);
-            const compNameDiv = document.createElement("div");
-            compNameDiv.innerText = items.companyName;
-            //사용자가 마우스로 선택한 회사 이름 표시
-            content.appendChild(compNameDiv);
 
-            //콤보박스 생성
-
-            debugger;
-            //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
-            const searchResult = await getCompanys(items.companyName, null).catch(console.error);
-
-            //검색 결과 0개 > 회사 정보 없음
-            //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
-            //검색 결과가 1개 > 바로 회사 정보 불러옴, 블락기업이면 블락이라고 표시
-
-            let resultMsgDiv = document.createElement("div");
-
-            switch (searchResult.status) {
-                case "SEARCH_FAIL":
-                    resultMsgDiv.innerText = "검색 결과가 없습니다";
-                    content.appendChild(resultMsgDiv);
-                    break;
-                case "SEARCH_BLOCK":
-                    resultMsgDiv.innerText = "비공개 기업입니다";
-                    content.appendChild(resultMsgDiv);
-                    break;
-                case "SEARCH_SUCCESS":
-                    let res = searchResult.result;
-                    //storage 저장
-
-                    let firstLineDiv = document.createElement("div");
-                    let secondLineDiv = document.createElement("div");
-                    firstLineDiv.innerText = "평균연봉 : " + res.salary + " / 연수 : " + res.year;
-                    secondLineDiv.innerText =
-                        "총 인원 : " +
-                        res.totalWorker +
-                        " / 퇴사: " +
-                        res.exWorker +
-                        " / 입사 " +
-                        res.inWorker;
-
-                    content.appendChild(firstLineDiv);
-                    content.appendChild(secondLineDiv);
-
-                    break;
-                case "SEARCH_LIST":
-                    const compNameSel = document.createElement("select");
-                    compNameSel.setAttribute("id", "");
-
-                    for (var i = 0; i < companyList.length; i++) {
-                        var compNameOption = document.createElement("option");
-                        compNameOption.value = i;
-                        compNameOption.text = companyList[i].company;
-                        compNameSel.options.add(compNameOption);
-                    }
-
-                    content.appendChild(compNameSel);
-                    break;
-                default:
-                    break;
-            }
-        }
-    });
+            content.appendChild(compNameSel);
+            break;
+        default:
+            break;
+    }
 }
 
 // async function getSelectionText() {
 //     await chrome.storage.sync.get("companyName", async function (items) {
 //         if (!chrome.runtime.error) {
 //             console.log(items);
-//             document.getElementById("info").innerText = items.companyName;
+//             document.getElementById("info").innerText = selectedText[0];
 //         }
 //     });
 // }

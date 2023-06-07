@@ -14,19 +14,53 @@ chrome.runtime.onInstalled.addListener(async () => {
     });
 });
 
+const setStorageData = (data) =>
+    new Promise((resolve, reject) =>
+        chrome.storage.sync.set(data, () =>
+            chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve()
+        )
+    );
+const getStorageData = (key) =>
+    new Promise((resolve, reject) =>
+        chrome.storage.sync.get(key, (result) =>
+            chrome.runtime.lastError
+                ? reject(Error(chrome.runtime.lastError.message))
+                : resolve(result)
+        )
+    );
 //마우스 오른쪽 메뉴 클릭시 이벤트
 chrome.contextMenus.onClicked.addListener(async (item, tab) => {
-    let map = new Map();
-    console.log(map.get(item.selectionText));
-    map.set(item.selectionText, {
-        salary: "3000만원",
-        totalWorker: "100명",
-        exWorker: "10명",
-        inWorker: "10명",
-        year: "3년",
-    });
+    // let map = new Map();
+    // console.log(map.get(item.selectionText));
 
-    console.log(map.get(item.selectionText));
+    // console.log(map.get(item.selectionText));
+    await setStorageData({ selectedText: item.selectionText });
+    let { selectedText } = await getStorageData("selectedText");
+
+    // let t = await getStorageData("t");
+
+    // // if (t.length == undefined) {
+    // let map = new Map();
+    // map.set(item.selectionText, {
+    //     salary: "3000만원",
+    //     totalWorker: "100명",
+    //     exWorker: "10명",
+    //     inWorker: "10명",
+    //     year: "3년",
+    // });
+    // await setStorageData({ t: map });
+    // let tt = await getStorageData("t");
+    // debugger;
+    // } else {
+    //     t.set(item.selectionText, {
+    //         salary: "3000만원",
+    //         totalWorker: "100명",
+    //         exWorker: "10명",
+    //         inWorker: "10명",
+    //         year: "3년",
+    //     });
+    //     await setStorageData({ t: t });
+    // }
 
     // await chrome.storage.sync.get(["compInfo"], async function (items) {
     //     if (items != undefined && items != null) {
