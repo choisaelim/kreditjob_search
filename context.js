@@ -37,6 +37,7 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     await setStorageData({ selectedText: item.selectionText });
     let { selectedText } = await getStorageData("selectedText");
 
+    debugger;
     // let t = await getStorageData("t");
 
     // // if (t.length == undefined) {
@@ -92,9 +93,9 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     // });
 });
 
-chrome.storage.onChanged.addListener(async ({ companyName }) => {
+chrome.storage.onChanged.addListener(async ({ selectedText }) => {
+    debugger;
     const popup = await chrome.action.getPopup({});
-    console.log(companyName.newValue);
 });
 
 /* 현재 미사용 코드
