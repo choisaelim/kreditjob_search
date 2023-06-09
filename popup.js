@@ -56,14 +56,17 @@ const getStorageData = (key) =>
                 : resolve(result)
         )
     );
-
+chrome.storage.onChanged.addListener(async ({ selectedText, test }) => {
+    debugger;
+    const popup = await chrome.action.getPopup({});
+});
 // const { data } = await getStorageData("data");
 
 // await setStorageData({ data: [someData] });
 
 async function updateCompanyInfo() {
     let { selectedText } = await getStorageData("selectedText");
-    let { exist } = await getStorageData(selectedText);
+    let exist = await getStorageData(selectedText);
     debugger;
 
     const info = document.getElementById("info");
@@ -87,9 +90,15 @@ async function updateCompanyInfo() {
 
         let firstLineDiv = document.createElement("div");
         let secondLineDiv = document.createElement("div");
-        firstLineDiv.innerText = "평균연봉 : " + res.salary + " / 연수 : " + res.year;
+        firstLineDiv.innerText =
+            "평균연봉 : " + exist[selectedText].salary + " / 연수 : " + exist[selectedText].year;
         secondLineDiv.innerText =
-            "총 인원 : " + res.totalWorker + " / 퇴사: " + res.exWorker + " / 입사 " + res.inWorker;
+            "총 인원 : " +
+            exist[selectedText].totalWorker +
+            " / 퇴사: " +
+            exist[selectedText].exWorker +
+            " / 입사 " +
+            exist[selectedText].inWorker;
 
         content.appendChild(firstLineDiv);
         content.appendChild(secondLineDiv);
@@ -129,6 +138,7 @@ async function updateCompanyInfo() {
                 content.appendChild(firstLineDiv);
                 content.appendChild(secondLineDiv);
                 await setStorageData({ [selectedText]: res });
+                // await setStorageData({ test: res });
 
                 break;
             case "SEARCH_LIST":

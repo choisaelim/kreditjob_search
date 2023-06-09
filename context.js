@@ -93,11 +93,6 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     // });
 });
 
-chrome.storage.onChanged.addListener(async ({ selectedText }) => {
-    debugger;
-    const popup = await chrome.action.getPopup({});
-});
-
 /* 현재 미사용 코드
 //크롬 익스텐션 아이콘 클릭시, 팝업이 없을 때 기본 로딩되는 이벤트
 chrome.action.onClicked.addListener(async (tab) => {
