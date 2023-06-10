@@ -37,7 +37,6 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     await setStorageData({ selectedText: item.selectionText });
     let { selectedText } = await getStorageData("selectedText");
 
-    debugger;
     // let t = await getStorageData("t");
 
     // // if (t.length == undefined) {

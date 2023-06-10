@@ -56,15 +56,12 @@ const getStorageData = (key) =>
                 : resolve(result)
         )
     );
-chrome.storage.onChanged.addListener(async ({ selectedText, test }) => {
-    debugger;
-    const popup = await chrome.action.getPopup({});
-});
+
 // const { data } = await getStorageData("data");
 
 // await setStorageData({ data: [someData] });
 
-async function updateCompanyInfo() {
+async function updateCompanyInfo(index) {
     let { selectedText } = await getStorageData("selectedText");
     let exist = await getStorageData(selectedText);
     debugger;
@@ -84,8 +81,7 @@ async function updateCompanyInfo() {
 
     let resultMsgDiv = document.createElement("div");
 
-    if (exist != undefined) {
-        let res = exist;
+    if (exist[selectedText] != undefined) {
         //storage 저장
 
         let firstLineDiv = document.createElement("div");
@@ -105,7 +101,7 @@ async function updateCompanyInfo() {
     } else {
         //콤보박스 생성
         //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
-        const searchResult = await getCompanys(selectedText, null).catch(console.error);
+        const searchResult = await getCompanys(selectedText, index).catch(console.error);
 
         //검색 결과 0개 > 회사 정보 없음
         //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
@@ -143,14 +139,26 @@ async function updateCompanyInfo() {
                 break;
             case "SEARCH_LIST":
                 const compNameSel = document.createElement("select");
-                compNameSel.setAttribute("id", "");
-
-                for (var i = 0; i < companyList.length; i++) {
-                    var compNameOption = document.createElement("option");
+                compNameSel.setAttribute("id", "companySelect");
+                var compNameOption = document.createElement("option");
+                compNameOption.value = "none";
+                compNameOption.text = "선택";
+                compNameOption.selected = true;
+                compNameSel.options.add(compNameOption);
+                for (var i = 0; i < searchResult.result.length; i++) {
+                    compNameOption = document.createElement("option");
                     compNameOption.value = i;
-                    compNameOption.text = companyList[i].company;
+                    compNameOption.text = searchResult.result[i].company;
                     compNameSel.options.add(compNameOption);
                 }
+
+                compNameSel.onchange = async (e) => {
+                    debugger;
+                    if (compNameSel.options[compNameSel.selectedIndex].value != "none") {
+                        console.log(compNameSel.selectedIndex - 1);
+                        await updateCompanyInfo(compNameSel.selectedIndex - 1);
+                    }
+                };
 
                 content.appendChild(compNameSel);
                 break;
