@@ -1,20 +1,57 @@
 // selenium import
 const { Builder, By, until, Key } = require("selenium-webdriver");
+const chromeDriver = require("selenium-webdriver/chrome");
+const chromeOptions = new chromeDriver.Options();
 const { SEARCH_LIST, SEARCH_SUCCESS, SEARCH_FAIL, SEARCH_BLOCK } = require("./const");
 
-const url = "https://kreditjob.com/board";
+const url = "https://insight.wanted.co.kr/salaryreport/step";
+
+const testapi = async (searchCompName, index) => {
+    chromeOptions.addArguments("--headless");
+    chromeOptions.addArguments("--disable-gpu");
+    chromeOptions.addArguments("--no-sandbox");
+    chromeOptions.addArguments("--lang=ko_KR");
+    chromeOptions.addArguments(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    );
+    let driver = await new Builder("./chromedriver")
+        .forBrowser("chrome")
+        .setChromeOptions(chromeOptions)
+        .build();
+
+    await driver.get(
+        "https://insight.wanted.co.kr/company/08919f50df9f8b30594f71ba6e3001b5a4434c3e/summary"
+    );
+    const pageSource = await driver
+        .wait(until.elementLocated(By.css("body")), 1000)
+        .getAttribute("innerHTML");
+    return pageSource;
+};
 
 //첫 번째 API
 const findCompanyList = async (searchCompName, index) => {
-    //브라우저 설정
-    let driver = await new Builder("./chromedriver").forBrowser("chrome").build();
+    chromeOptions.addArguments("--headless");
+    chromeOptions.addArguments("--disable-gpu");
+    chromeOptions.addArguments("--no-sandbox");
+    chromeOptions.addArguments("--lang=ko_KR");
+    // chromeOptions.addArguments("--start-maximized");
+    chromeOptions.addArguments(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    );
+    let driver = await new Builder("./chromedriver")
+        .forBrowser("chrome")
+        .setChromeOptions(chromeOptions)
+        .build();
+
     //url 접속
     await driver.get(url);
     // const searchSelector = 'input.hmxpFE';
+    //*[@id="__next"]/div/nav/div/div[2]/div/div[2]/input
     const searchDivXpath = '//*[@id="__next"]/div/nav/div/div[2]/div';
-    const searchPlaceHolder = "//input[contains(@placeholder,'기업을 검색')]";
-    const searchInputUpper =
-        "//input[contains(@placeholder,'기업을 검색')]/following-sibling::div/ul";
+    const searchButtonXpath = '//*[@id="__next"]/div/nav/div/div[2]/div';
+    const searchPlaceHolder = "//input[contains(@placeholder,'기업을')]";
+    const searchInputUpper = "//input[contains(@placeholder,'기업을')]/..//ul";
+    ///following-sibling::div/ul
     const modalcloseXpath = "//*[@class='modalContainer']//button[1]";
 
     if (searchCompName == null || searchCompName == undefined || searchCompName == "")
@@ -26,14 +63,16 @@ const findCompanyList = async (searchCompName, index) => {
 
     try {
         //검색창 대기
-        await driver.wait(until.elementLocated(By.xpath(searchDivXpath)));
-
+        await driver.wait(until.elementLocated(By.xpath(searchButtonXpath)), 3000);
+        const searchButton = await driver.findElement(By.xpath(searchButtonXpath));
+        await searchButton.click();
+        // await driver.sleep(3000);
         // const modalclosebutton = await driver.findElement(By.xpath(modalcloseXpath));
         // if (modalclosebutton != null) {
         //     modalclosebutton.click(); //팝업창 닫기
         // }
         //검색창 클릭해서 input 활성화
-        const searchDiv = await driver.findElement(By.xpath(searchDivXpath));
+        const searchDiv = await driver.findElement(By.xpath(searchPlaceHolder));
         await searchDiv.click();
 
         //검색창에 회사명 입력
@@ -45,8 +84,14 @@ const findCompanyList = async (searchCompName, index) => {
             await searchTopInput.click();
 
             //회사명, 위치 드롭다운 내용을 리스트로 출력
-            await driver.sleep(1000);
+            const pageSource = await driver
+                .wait(until.elementLocated(By.css("body")), 1000)
+                .getAttribute("innerHTML");
+
+            // return pageSource;
+            // await driver.sleep(3000);
             const searchList = await driver.findElement(By.xpath(searchInputUpper));
+            // return searchList.getAttribute("innerHTML");
             const searchItems = await searchList.findElements(By.css("li"));
 
             if (searchItems.length == 0) {
@@ -74,7 +119,8 @@ const findCompanyList = async (searchCompName, index) => {
                 return result;
             } else {
                 if (searchItems.length == 1) {
-                    await searchItems[0].click();
+                    const test = searchItems[0];
+                    await test.click();
                 } else if (!isNaN(index)) {
                     await searchItems[index].click();
                 }
@@ -84,15 +130,15 @@ const findCompanyList = async (searchCompName, index) => {
                         "//*[@id='__next']/div/main/section/section/div[1]/div[2]/div/div[2]/span[1]";
 
                     const salaryXpath =
-                        "//*[@id='company-summary']//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
+                        "//span[contains(text(),'예상평균연봉')]/../following-sibling::div//span[1]";
                     const workerXpath =
-                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[1]";
+                        "//span[contains(text(),'총 인원')]/../following-sibling::div//span[1]";
                     const exitXpath =
-                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div//span[2]";
+                        "//span[contains(text(),'총 인원')]/../following-sibling::div//span[2]";
                     const inXpath =
-                        "//*[@id='company-summary']//span[contains(text(),'총 인원')]/../following-sibling::div/div[2]/div[2]/span[2]";
+                        "//span[contains(text(),'총 인원')]/../following-sibling::div/div[2]/div[2]/span[2]";
 
-                    await driver.wait(until.elementLocated(By.xpath(salaryXpath)));
+                    await driver.wait(until.elementLocated(By.xpath(salaryXpath)), 3000);
                     const year = await driver.findElement(By.xpath(yearXpath)).getText();
                     const salary = await driver.findElement(By.xpath(salaryXpath)).getText();
 
