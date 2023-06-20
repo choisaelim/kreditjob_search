@@ -13,12 +13,12 @@ async function getCompanys(name, index) {
 }
 
 document.body.onload = async function () {
-    // await updateCompanyInfo();
+    await updateCompanyInfo();
 };
 
-document.getElementById("onclicked-button").addEventListener("click", async () => {
-    await updateCompanyInfo();
-});
+// document.getElementById("onclicked-button").addEventListener("click", async () => {
+//     await updateCompanyInfo();
+// });
 
 //companyName
 //companyList - 배열

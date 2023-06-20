@@ -10,6 +10,14 @@
     "action": {
       "default_popup": "popup.html"
     },
+    "commands": {
+      "_execute_action": {
+          "suggested_key": {
+              "default": "Alt+Shift+P",
+              "mac": "MacCtrl+Command+P"
+          }
+      }
+  },
     "manifest_version": 3
   }
   
