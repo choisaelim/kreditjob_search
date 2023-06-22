@@ -3,13 +3,13 @@ let companyList = [
     // {id: '2', company: "테스트 / 서울, 강북구", link : ""}
 ];
 
-chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs[0].url) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'run', url: tabs[0].url});
-      }
-    });
-  });
+// chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
+//     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//       if (tabs[0].url) {
+//         chrome.tabs.sendMessage(tabs[0].id, {action: 'run', url: tabs[0].url});
+//       }
+//     });
+//   });
 
 //로딩시 기본 이벤트
 chrome.runtime.onInstalled.addListener(async () => {
@@ -42,8 +42,11 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     // console.log(map.get(item.selectionText));
 
     // console.log(map.get(item.selectionText));
-    await setStorageData({ selectedText: item.selectionText });
-    let { selectedText } = await getStorageData("selectedText");
+    let selectedText = item.selectionText;
+    selectedText.trim();
+    selectedText.replace("(주)", "");
+    await setStorageData({ selectedText: selectedText });
+    // let { selectedText } = await getStorageData("selectedText");
 
     // let t = await getStorageData("t");
 

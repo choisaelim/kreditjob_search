@@ -2,11 +2,17 @@
     "name": "회사 검색하기",
     "description": "kreditjob company info search extension",
     "version": "0.11",
-    "permissions": ["contextMenus", "activeTab", "scripting","storage"],
+    "permissions": ["contextMenus", "activeTab", "scripting","storage","favicon", "webNavigation"],
     "background": {
       "service_worker": "context.js",
       "type": "module"
     },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ],
     "homepage_url": "https://github.com/choisaelim/kreditjob_search",
     "action": {
       "default_popup": "popup.html"
@@ -19,11 +25,7 @@
           }
       }
     },
-    "content_scripts":[{
-      "matches": [
-        "*://wanted.co.kr/*"
-      ]
-    }],
+   
     "manifest_version": 3
   }
   
