@@ -6,10 +6,10 @@ function faviconURL(u) {
 }
 console.log("test");
 
+//wanted 됨
 chrome.runtime.onMessage.addListener(function (msg) {
     console.log(msg);
-    debugger;
-    if (msg.action === "rerun") {
+    if (msg.action === "run") {
         // if (msg.url === location.href) {
         //   enableTranslation(API_KEY, LANGUAGE);
         // }
@@ -18,18 +18,18 @@ chrome.runtime.onMessage.addListener(function (msg) {
         imageOverlay.alt = "Google's favicon";
         imageOverlay.classList.add("favicon-overlay");
         //.body
-        const compNames = document.querySelectorAll(".list_item");
-        //document.querySelectorAll('.job-card-company-name');
+        const compNames = document.querySelectorAll(".body"); //document.querySelectorAll(".list_item");
         if (compNames.length > 0) {
             compNames.forEach((el) => {
                 //.job-card-company-name
-                const commentActions = el.querySelectorAll(".company_nm");
+                const commentActions = el.querySelectorAll(".job-card-company-name"); //el.querySelectorAll(".company_nm");
                 commentActions.forEach((action) => {
-                    if (!action.querySelector("span.translate")) {
-                        const span = document.createElement("span");
-                        span.innerHTML = "test";
-                        span.className = "translate";
-                        action.appendChild(span);
+                    if (!action.querySelector("img")) {
+                        // const span = document.createElement("span");
+                        // span.innerHTML = "test";
+                        // span.className = "translate";
+                        // action.appendChild(span);
+                        action.appendChild(imageOverlay);
                     }
                     // if (!action.querySelector('button.translate')) {
                     //   const btn = document.createElement('button');

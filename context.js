@@ -3,13 +3,13 @@ let companyList = [
     // {id: '2', company: "테스트 / 서울, 강북구", link : ""}
 ];
 
-// chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
-//     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//       if (tabs[0].url) {
-//         chrome.tabs.sendMessage(tabs[0].id, {action: 'run', url: tabs[0].url});
-//       }
-//     });
-//   });
+chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        // if (tabs[0].url) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "run" });
+        // }
+    });
+});
 
 //로딩시 기본 이벤트
 chrome.runtime.onInstalled.addListener(async () => {
