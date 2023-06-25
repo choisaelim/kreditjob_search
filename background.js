@@ -3,12 +3,57 @@ let companyList = [
     // {id: '2', company: "테스트 / 서울, 강북구", link : ""}
 ];
 
-chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        // if (tabs[0].url) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: "run" });
-        // }
+chrome.webNavigation.onCompleted.addListener(() => {
+    console.log("completed");
+});
+
+chrome.webNavigation.onCommitted.addListener(() => {
+    console.log("committed");
+});
+
+chrome.webNavigation.onReferenceFragmentUpdated.addListener(() => {
+    console.log("reference updated");
+});
+chrome.webNavigation.onBeforeNavigate.addListener(() => {
+    console.log("onBeforeNavigate");
+});
+
+chrome.webNavigation.onCreatedNavigationTarget.addListener(() => {
+    console.log("onCreatedNavigationTarget");
+});
+
+chrome.webNavigation.onDOMContentLoaded.addListener(() => {
+    console.log("onDOMContentLoaded");
+});
+
+chrome.webNavigation.onErrorOccurred.addListener(() => {
+    console.log("onErrorOccurred");
+});
+
+chrome.webNavigation.onReferenceFragmentUpdated.addListener(() => {
+    console.log("onReferenceFragmentUpdated");
+});
+
+chrome.webNavigation.onTabReplaced.addListener(() => {
+    console.log("onTabReplaced");
+});
+
+chrome.webNavigation.onHistoryStateUpdated.addListener((browserActivityState) => {
+    console.log(browserActivityState);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] != undefined && tabs[0].url.match("https://.*.wanted.co.kr/.*")) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+                action: "run",
+                browserActivityState: browserActivityState,
+            });
+        }
     });
+    // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    //     if (tabs[0] != undefined) {
+    //         console.log(tabs[0]);
+    //         chrome.tabs.sendMessage(tabs[0].id, { action: "run" });
+    //     }
+    // });
 });
 
 //로딩시 기본 이벤트
@@ -45,6 +90,7 @@ chrome.contextMenus.onClicked.addListener(async (item, tab) => {
     let selectedText = item.selectionText;
     selectedText.trim();
     selectedText.replace("(주)", "");
+    //괄호로 감싼 부분 제거 ex. 씨엘엠앤에스(CLM&S)
     await setStorageData({ selectedText: selectedText });
     // let { selectedText } = await getStorageData("selectedText");
 
