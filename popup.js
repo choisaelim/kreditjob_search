@@ -42,6 +42,7 @@ async function setCompanyInfo(value) {
     let result = await c;
     return result;
 }
+
 const setStorageData = (data) =>
     new Promise((resolve, reject) =>
         chrome.storage.sync.set(data, () =>
@@ -64,7 +65,6 @@ const getStorageData = (key) =>
 async function updateCompanyInfo(index) {
     let { selectedText } = await getStorageData("selectedText");
     let exist = await getStorageData(selectedText);
-    debugger;
 
     const info = document.getElementById("info");
     //이미 생성된 회사 정보가 있으면 지우고 새로 생성
@@ -134,7 +134,6 @@ async function updateCompanyInfo(index) {
                 content.appendChild(firstLineDiv);
                 content.appendChild(secondLineDiv);
                 await setStorageData({ [selectedText]: res });
-                // await setStorageData({ test: res });
 
                 break;
             case "SEARCH_LIST":
@@ -153,7 +152,6 @@ async function updateCompanyInfo(index) {
                 }
 
                 compNameSel.onchange = async (e) => {
-                    debugger;
                     if (compNameSel.options[compNameSel.selectedIndex].value != "none") {
                         console.log(compNameSel.selectedIndex - 1);
                         await updateCompanyInfo(compNameSel.selectedIndex - 1);

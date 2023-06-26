@@ -1,59 +1,47 @@
-let companyList = [
-    // {id: '1', company: "금병영 / 서울, 강동구", link : ""},
-    // {id: '2', company: "테스트 / 서울, 강북구", link : ""}
-];
+import { regexName } from "./util.js";
 
-chrome.webNavigation.onCompleted.addListener(() => {
-    console.log("completed");
-});
+// chrome.webRequest.onCompleted.addListener(() => {
+//     console.log("completed");
+// });
 
-chrome.webNavigation.onCommitted.addListener(() => {
-    console.log("committed");
-});
+// function tellContentScriptToReload() {
+//     console.log("hello world");
+// }
 
-chrome.webNavigation.onReferenceFragmentUpdated.addListener(() => {
-    console.log("reference updated");
-});
-chrome.webNavigation.onBeforeNavigate.addListener(() => {
-    console.log("onBeforeNavigate");
-});
+// function complete() {
+//     console.log("com");
+// }
 
-chrome.webNavigation.onCreatedNavigationTarget.addListener(() => {
-    console.log("onCreatedNavigationTarget");
-});
+// chrome.webRequest.onCompleted.addListener(complete, {
+//     urls: ["https://www.wanted.co.kr/*"],
+// });
 
-chrome.webNavigation.onDOMContentLoaded.addListener(() => {
-    console.log("onDOMContentLoaded");
-});
+// chrome.webRequest.onResponseStarted.addListener(
+//     function (details) {
+//         console.log("test");
+//     },
+//     { urls: ["<all_urls>"] }
+// );
 
-chrome.webNavigation.onErrorOccurred.addListener(() => {
-    console.log("onErrorOccurred");
-});
+const networkFilters = {
+    //https://www.wanted.co.kr/api/v4/jobs
+    urls: ["https://www.wanted.co.kr/api/v4/jobs*"],
+};
 
-chrome.webNavigation.onReferenceFragmentUpdated.addListener(() => {
-    console.log("onReferenceFragmentUpdated");
-});
-
-chrome.webNavigation.onTabReplaced.addListener(() => {
-    console.log("onTabReplaced");
-});
+chrome.webRequest.onCompleted.addListener((details) => {
+    console.log(details);
+    if (details.url.match("https://.*.wanted.co.kr/.*") && details.tabId != undefined) {
+        chrome.tabs.sendMessage(details.tabId, {
+            action: "run",
+        });
+    }
+}, networkFilters);
 
 chrome.webNavigation.onHistoryStateUpdated.addListener((browserActivityState) => {
     console.log(browserActivityState);
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0] != undefined && tabs[0].url.match("https://.*.wanted.co.kr/.*")) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-                action: "run",
-                browserActivityState: browserActivityState,
-            });
-        }
-    });
-    // chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    //     if (tabs[0] != undefined) {
-    //         console.log(tabs[0]);
-    //         chrome.tabs.sendMessage(tabs[0].id, { action: "run" });
-    //     }
-    // });
+});
+chrome.webNavigation.onTabReplaced.addListener((browserActivityState) => {
+    console.log(browserActivityState);
 });
 
 //로딩시 기본 이벤트
@@ -81,72 +69,19 @@ const getStorageData = (key) =>
                 : resolve(result)
         )
     );
+// const regexName = (e) => {
+//     e.trim();
+//     e.replace("(주)", "");
+//     e.replace(/(.*)/gi, "");
+//     return e;
+// };
+
 //마우스 오른쪽 메뉴 클릭시 이벤트
 chrome.contextMenus.onClicked.addListener(async (item, tab) => {
-    // let map = new Map();
-    // console.log(map.get(item.selectionText));
-
-    // console.log(map.get(item.selectionText));
-    let selectedText = item.selectionText;
-    selectedText.trim();
-    selectedText.replace("(주)", "");
+    let selectedText = regexName(item.selectionText);
+    console.log(selectedText);
     //괄호로 감싼 부분 제거 ex. 씨엘엠앤에스(CLM&S)
     await setStorageData({ selectedText: selectedText });
-    // let { selectedText } = await getStorageData("selectedText");
-
-    // let t = await getStorageData("t");
-
-    // // if (t.length == undefined) {
-    // let map = new Map();
-    // map.set(item.selectionText, {
-    //     salary: "3000만원",
-    //     totalWorker: "100명",
-    //     exWorker: "10명",
-    //     inWorker: "10명",
-    //     year: "3년",
-    // });
-    // await setStorageData({ t: map });
-    // let tt = await getStorageData("t");
-    // debugger;
-    // } else {
-    //     t.set(item.selectionText, {
-    //         salary: "3000만원",
-    //         totalWorker: "100명",
-    //         exWorker: "10명",
-    //         inWorker: "10명",
-    //         year: "3년",
-    //     });
-    //     await setStorageData({ t: t });
-    // }
-
-    // await chrome.storage.sync.get(["compInfo"], async function (items) {
-    //     if (items != undefined && items != null) {
-    //         console.log(items.companyName);
-    //     }
-
-    //     if (items.companyName == null) {
-    //         //드래그한 회사이름 storage에 companyName으로 저장
-    //         await chrome.storage.sync.set(
-    //             {
-    //                 companyName: {
-    //                     name: item.selectionText,
-    //                     info: {
-    //                         salary: "3000만원",
-    //                         totalWorker: "100명",
-    //                         exWorker: "10명",
-    //                         inWorker: "10명",
-    //                         year: "3년",
-    //                     },
-    //                 },
-    //             },
-    //             () => {
-    //                 console.log("compName in context " + item.selectionText);
-    //             }
-    //         );
-    //     } else {
-    //         console.log("data exist");
-    //     }
-    // });
 });
 
 /* 현재 미사용 코드
