@@ -2,7 +2,7 @@
     "name": "회사 검색하기",
     "description": "kreditjob company info search extension",
     "version": "0.11",
-    "host_permissions": ["https://www.wanted.co.kr/*"],
+    "host_permissions": ["https://www.wanted.co.kr/*", "https://www.saramin.co.kr/zf_user/jobs/*"],
     "permissions": ["contextMenus", "activeTab", "scripting","storage","favicon",
      "webNavigation", "tabs", "webRequest"],
     "background": {
@@ -11,7 +11,7 @@
     },
     "content_scripts": [
       {
-        "matches": ["https://www.wanted.co.kr/*"],
+        "matches": ["https://www.wanted.co.kr/*", "https://www.saramin.co.kr/zf_user/jobs/*"],
         "js": ["content.js"],
         "css": ["search.css"]
       }

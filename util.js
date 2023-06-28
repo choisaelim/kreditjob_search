@@ -24,8 +24,10 @@ export function getStorageData(key) {
 }
 
 export function regexName(e) {
-    e.trim();
-    e.replace("(주)", "");
-    e.replace(/(.*)/gi, "");
-    return e;
+    e = e.toString();
+    e = e.replace("(주)", "");
+    e = e.replace("주식회사", "");
+    e = e.replace(/\(.*\)/gi, "");
+    e = e.replace(/ /gi, "");
+    return e.trim();
 }

@@ -24,25 +24,74 @@ import { regexName } from "./util.js";
 // );
 
 const networkFilters = {
-    //https://www.wanted.co.kr/api/v4/jobs
-    urls: ["https://www.wanted.co.kr/api/v4/jobs*"],
+    urls: ["https://www.wanted.co.kr/*", "https://www.saramin.co.kr/*"],
 };
-
+//https://www.wanted.co.kr/api/chaos/recruit/v1/positions/recommended?1687918106834
+const wantedUrl = [
+    "https://.*.wanted.co.kr/api/v4/jobs.*",
+    // "https://.*.wanted.co.kr/matched.*",
+    "https://.*.wanted.co.kr/api/chaos/recruit.*",
+];
+const matchedUrl = (url, urlArry) => {
+    let result = false;
+    urlArry.forEach((el) => {
+        if (url.match(el)) {
+            result = true;
+        }
+    });
+    return result;
+};
 chrome.webRequest.onCompleted.addListener((details) => {
-    console.log(details);
-    if (details.url.match("https://.*.wanted.co.kr/.*") && details.tabId != undefined) {
+    console.log(details.url + matchedUrl(details.url, wantedUrl));
+    if (matchedUrl(details.url, wantedUrl) && details.tabId != undefined) {
+        console.log(details.url);
         chrome.tabs.sendMessage(details.tabId, {
-            action: "run",
+            action: "wanted",
+        });
+    } else if (
+        details.url.match("https://.*.saramin.co.kr/zf_user/jobs.*") &&
+        details.tabId != undefined
+    ) {
+        // console.log(details.url);
+        // debugger;
+        chrome.tabs.sendMessage(details.tabId, {
+            action: "saramin",
         });
     }
 }, networkFilters);
 
-chrome.webNavigation.onHistoryStateUpdated.addListener((browserActivityState) => {
-    console.log(browserActivityState);
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    if (
+        details.transitionQualifiers.length > 0 &&
+        details.transitionQualifiers[0] == "forward_back"
+    ) {
+        if (details.url.match("https://.*.wanted.co.kr/wdlist/.*") && details.tabId != undefined) {
+            chrome.tabs.sendMessage(details.tabId, {
+                action: "wanted",
+            });
+        } else if (
+            details.url.match("https://.*.saramin.co.kr/zf_user/jobs/list/.*") &&
+            details.tabId != undefined
+        ) {
+            chrome.tabs.sendMessage(details.tabId, {
+                action: "saramin",
+            });
+        }
+    }
+
+    if (
+        details.url.match("https://.*.saramin.co.kr/zf_user/jobs/list/.*") &&
+        details.tabId != undefined
+    ) {
+        console.log(datails.url);
+        chrome.tabs.sendMessage(details.tabId, {
+            action: "saramin",
+        });
+    }
 });
-chrome.webNavigation.onTabReplaced.addListener((browserActivityState) => {
-    console.log(browserActivityState);
-});
+// chrome.webNavigation.onTabReplaced.addListener((browserActivityState) => {
+//     console.log(browserActivityState);
+// });
 
 //로딩시 기본 이벤트
 chrome.runtime.onInstalled.addListener(async () => {
@@ -61,14 +110,7 @@ const setStorageData = (data) =>
             chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve()
         )
     );
-const getStorageData = (key) =>
-    new Promise((resolve, reject) =>
-        chrome.storage.sync.get(key, (result) =>
-            chrome.runtime.lastError
-                ? reject(Error(chrome.runtime.lastError.message))
-                : resolve(result)
-        )
-    );
+
 // const regexName = (e) => {
 //     e.trim();
 //     e.replace("(주)", "");

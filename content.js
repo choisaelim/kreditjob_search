@@ -21,15 +21,28 @@ const setStorageData = (data) =>
             chrome.runtime.lastError ? reject(Error(chrome.runtime.lastError.message)) : resolve()
         )
     );
-const isSearchButton = (elem) => {
+const isSearchButton = async (elem) => {
     return elem.matches(".search_company_btn");
 };
 
-const findCompName = (li) => {
+const findCompName = async (li) => {
     return li.querySelector("div.job-card-company-name").innerHTML;
 };
-const findCompNameByLi = (li) => {
+const findCompNameByLi = async (li) => {
     return li.querySelector("div.job-card-company-name").innerHTML;
+};
+
+const findCompNameBySpan = async (a) => {
+    return a.querySelector("span").innerHTML;
+};
+
+const regexName = async (e) => {
+    e = e.toString();
+    e = e.replace("(주)", "");
+    e = e.replace("주식회사", "");
+    e = e.replace(/\(.*\)/gi, "");
+    e = e.replace(/ /gi, "");
+    return e.trim();
 };
 
 async function getCompanys(name, index) {
@@ -39,38 +52,54 @@ async function getCompanys(name, index) {
     return data;
 }
 
-async function searchCompany(target) {
-    const li = target.parentNode.parentNode;
-    const compName = findCompName(li);
-    if (li.querySelector("div.search_company") != null) {
-        li.removeChild(li.querySelector("div.search_company"));
-    }
+async function searchCompany(type, li, index) {
+    // const li = target.parentNode.parentNode;
+    let compName = "";
 
     //하단 div 생성
     const content = document.createElement("div");
-    content.className = "search_company";
 
-    if (target != "") {
+    if (type == "wanted") {
+        compName = await findCompName(li);
+        compName = await regexName(compName);
+        if (li.querySelector("div.search_company") != null) {
+            li.removeChild(li.querySelector("div.search_company"));
+        }
+        content.className = "search_company";
+    } else if (type == "saramin") {
+        compName = await findCompNameBySpan(li); //a 태그
+        compName = await regexName(compName);
+        if (li.nextElementSibling.matches("div.search_company_saramin")) {
+            li.parentNode.removeChild(li.nextElementSibling);
+        }
+        content.className = "search_company_saramin";
+    }
+
+    if (li != "") {
         //버튼 클릭시
         console.log("click");
-        const span = document.createElement("span");
 
         //콤보박스 생성
         //검색해서 나온 회사 목록 선택하도록 콤보박스에 입력
-        const searchResult = await getCompanys(compName, null).catch(console.error);
+        let searchResult = await getCompanys(compName, index).catch(console.error);
 
+        if (searchResult == undefined) {
+            searchResult = {
+                status: "SEARCH_FAIL",
+            };
+        }
         //검색 결과 0개 > 회사 정보 없음
         //검색 결과 1개 초과 > 회사 목록 출력하고 하나 선택하고 버튼 클릭시 해당 회사 조회
         //검색 결과가 1개 > 바로 회사 정보 불러옴, 블락기업이면 블락이라고 표시
-
+        console.log(searchResult.status);
         switch (searchResult.status) {
             case "SEARCH_FAIL":
                 content.innerText = "검색 결과가 없습니다";
-                // content.appendChild(resultMsgDiv);
+                // await setStorageData({ [compName]: searchResult.status });
                 break;
             case "SEARCH_BLOCK":
                 content.innerText = "비공개 기업입니다";
-                // content.appendChild(resultMsgDiv);
+                await setStorageData({ [compName]: searchResult.status });
                 break;
             case "SEARCH_SUCCESS":
                 let res = searchResult.result;
@@ -97,7 +126,7 @@ async function searchCompany(target) {
                 compNameSel.onchange = async (e) => {
                     if (compNameSel.options[compNameSel.selectedIndex].value != "none") {
                         console.log(compNameSel.selectedIndex - 1);
-                        // await updateCompanyInfo(compNameSel.selectedIndex - 1);
+                        await searchCompany(type, li, compNameSel.selectedIndex - 1);
                     }
                 };
 
@@ -107,39 +136,59 @@ async function searchCompany(target) {
                 break;
         }
 
-        li.append(content);
+        if (type == "saramin") {
+            //a 태그 밑에 div search_company_saramin
+            li.after(content);
+        } else if (type == "wanted") {
+            //li 자식 중 가장 끝에 추가
+            li.append(content);
+        }
     }
 }
 
 document.querySelector("body").addEventListener("click", async (event) => {
     let target = "";
-    if (isSearchButton(event.target)) {
+    if (await isSearchButton(event.target)) {
         target = event.target;
-    } else if (isSearchButton(event.target.parentNode)) {
+    } else if (await isSearchButton(event.target.parentNode)) {
         target = event.target.parentNode;
+    } else if (await isSearchButton(event.target.parentNode.parentNode)) {
+        target = event.target.parentNode.parentNode;
     }
 
-    if (target != "") searchCompany(target);
+    if (target != "") {
+        const div = target.parentNode;
+        if (div.matches(".search_company_saramin")) {
+            await searchCompany("saramin", div.parentNode.querySelector("a"));
+        } else {
+            await searchCompany("wanted", div.parentNode);
+        }
+    }
 });
 
 async function addCompInfo(content, data) {
     const span = document.createElement("span");
-    span.innerHTML =
-        //"평균연봉 : 5,156만원 / 연수 : 6년 (2017) 총 인원 : 53명 / 퇴사: 5명 / 입사 28명";
-        "평균연봉 : " +
-        data.salary +
-        " / 연수 : " +
-        data.year +
-        "<br/>" +
-        PEOPLE_SVG +
-        " " +
-        data.totalWorker +
-        UP_TRIANGLE_SVG +
-        " " +
-        data.inWorker +
-        DONW_TRIANGLE_SVG +
-        " " +
-        data.exWorker;
+    if (data == "SEARCH_BLOCK") {
+        span.innerHTML = "비공개 기업입니다";
+    } else if (data == "SEARCH_FAIL") {
+    } else if (data != undefined && data.salary != undefined) {
+        span.innerHTML =
+            //"평균연봉 : 5,156만원 / 연수 : 6년 (2017) 총 인원 : 53명 / 퇴사: 5명 / 입사 28명";
+            "평균연봉 : " +
+            data.salary +
+            " / 연수 : " +
+            data.year +
+            "<br/>" +
+            PEOPLE_SVG +
+            " " +
+            data.totalWorker +
+            UP_TRIANGLE_SVG +
+            " " +
+            data.inWorker +
+            DONW_TRIANGLE_SVG +
+            " " +
+            data.exWorker;
+    }
 
     //li
     content.append(span);
@@ -149,22 +198,53 @@ const addSearchBar = async (action) => {
     if (!action.querySelector("div.search_company")) {
         const content = document.createElement("div");
         content.className = "search_company";
-        const compName = findCompNameByLi(action);
 
-        //데이터 있으면
-        let exist = await getStorageData(compName);
-        if (exist[compName] != undefined) {
-            addCompInfo(content, exist[compName]);
-        } else {
-            //데이터 없으면 검색 버튼
-            const btn = document.createElement("button");
-            btn.setAttribute("title", "Search Company");
-            btn.className = "search_company_btn";
-            btn.innerHTML = SEARCH_SVG;
-            content.append(btn);
+        let compName = await findCompNameByLi(action);
+
+        if (compName != null && compName != undefined && compName != "") {
+            compName = await regexName(compName);
+            //데이터 있으면
+            let exist = await getStorageData(compName);
+            if (exist[compName] != undefined) {
+                await addCompInfo(content, exist[compName]);
+            } else {
+                //데이터 없으면 검색 버튼
+                const btn = document.createElement("button");
+                btn.setAttribute("title", "Search Company");
+                btn.className = "search_company_btn";
+                btn.innerHTML = SEARCH_SVG;
+                content.append(btn);
+            }
+
+            action.append(content);
         }
+    }
+};
 
-        action.append(content);
+const addSearchBarSaramin = async (action) => {
+    //a 태그
+    if (!action.nextElementSibling.querySelector("div.search_company_saramin")) {
+        const content = document.createElement("div");
+        content.className = "search_company_saramin";
+        let compName = await findCompNameBySpan(action);
+
+        if (compName != null && compName != undefined && compName != "") {
+            compName = await regexName(compName);
+            //데이터 있으면
+            let exist = await getStorageData(compName);
+            if (exist[compName] != undefined) {
+                addCompInfo(content, exist[compName]);
+            } else {
+                //데이터 없으면 검색 버튼
+                const btn = document.createElement("button");
+                btn.setAttribute("title", "Search Company");
+                btn.className = "search_company_btn";
+                btn.innerHTML = SEARCH_SVG;
+                content.append(btn);
+            }
+
+            action.after(content);
+        }
     }
 };
 
@@ -172,11 +252,8 @@ const addSearchBar = async (action) => {
 //background에서 메세지 날리면 해당되는 액션 실행
 //job 공고 밑에 돋보기 혹은 이미 검색한 적 있는 회사 정보 표시
 chrome.runtime.onMessage.addListener(function (msg) {
-    if (msg.action === "run") {
-        console.log("run");
-        // if (msg.url === location.href) {
-        //   enableTranslation(API_KEY, LANGUAGE);
-        // }
+    if (msg.action === "wanted") {
+        console.log("wanted");
         //.body
         if (document.querySelectorAll(".body").length > 0) {
             //.body에서 가장 가까운 ul 선택
@@ -187,6 +264,14 @@ chrome.runtime.onMessage.addListener(function (msg) {
                     addSearchBar(action);
                 });
             }
+        }
+    } else if (msg.action === "saramin") {
+        const jobList = document.querySelectorAll("div.list_item");
+        if (jobList.length > 0) {
+            jobList.forEach((job) => {
+                const compA = job.querySelector("div.company_nm").querySelector("a");
+                addSearchBarSaramin(compA);
+            });
         }
     }
 });
