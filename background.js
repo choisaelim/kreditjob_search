@@ -42,17 +42,17 @@ const matchedUrl = (url, urlArry) => {
     return result;
 };
 chrome.webRequest.onCompleted.addListener((details) => {
-    console.log(details.url + matchedUrl(details.url, wantedUrl));
+    // console.log(details.url + matchedUrl(details.url, wantedUrl));
     if (matchedUrl(details.url, wantedUrl) && details.tabId != undefined) {
         console.log(details.url);
         chrome.tabs.sendMessage(details.tabId, {
             action: "wanted",
         });
     } else if (
-        details.url.match("https://.*.saramin.co.kr/zf_user/jobs.*") &&
+        details.url.match("https://.*.saramin.co.kr/zf_user/jobs/relay/view-ajax.*") &&
         details.tabId != undefined
     ) {
-        // console.log(details.url);
+        console.log(details.url);
         // debugger;
         chrome.tabs.sendMessage(details.tabId, {
             action: "saramin",

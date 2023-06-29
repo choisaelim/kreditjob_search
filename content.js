@@ -25,16 +25,24 @@ const isSearchButton = async (elem) => {
     return elem.matches(".search_company_btn");
 };
 
-const findCompName = async (li) => {
-    return li.querySelector("div.job-card-company-name").innerHTML;
-};
+const SELECTOR_SPAN = "span";
+const SELECTOR_JOB_CARD_COMPNAME = "div.job-card-company-name";
+//사람인 공고 상세
+const SELECTOR_JV_HEADER = "div.jv_header";
+const SELECTOR_JV_TITLE = "div.title_inner > a.company";
+
+// const findCompName = async (li) => {
+//     return li.querySelector("div.job-card-company-name").innerHTML;
+// };
 const findCompNameByLi = async (li) => {
     return li.querySelector("div.job-card-company-name").innerHTML;
 };
 
-const findCompNameBySpan = async (a) => {
-    return a.querySelector("span").innerHTML;
+const findCompName = async (initial, selector) => {
+    return initial.querySelector(selector).innerHTML;
 };
+
+//기준 위치,
 
 const regexName = async (e) => {
     e = e.toString();
@@ -60,14 +68,19 @@ async function searchCompany(type, li, index) {
     const content = document.createElement("div");
 
     if (type == "wanted") {
-        compName = await findCompName(li);
+        compName = await findCompName(li, SELECTOR_JOB_CARD_COMPNAME);
         compName = await regexName(compName);
-        if (li.querySelector("div.search_company") != null) {
+        if (li.querySelector("div.search_company")) {
             li.removeChild(li.querySelector("div.search_company"));
         }
         content.className = "search_company";
     } else if (type == "saramin") {
-        compName = await findCompNameBySpan(li); //a 태그
+        if (li.nextElementSibling && li.nextElementSibling.matches(SELECTOR_JV_HEADER)) {
+            compName = await findCompName(li.nextElementSibling, SELECTOR_JV_TITLE); //a 태그
+        } else {
+            compName = await findCompName(li, SELECTOR_SPAN); //a 태그
+        }
+
         compName = await regexName(compName);
         if (li.nextElementSibling.matches("div.search_company_saramin")) {
             li.parentNode.removeChild(li.nextElementSibling);
@@ -156,10 +169,14 @@ document.querySelector("body").addEventListener("click", async (event) => {
         target = event.target.parentNode.parentNode;
     }
 
+    //target = div 내 span 태그
     if (target != "") {
         const div = target.parentNode;
         if (div.matches(".search_company_saramin")) {
-            await searchCompany("saramin", div.parentNode.querySelector("a"));
+            if (div.parentNode && div.parentNode.matches("a"))
+                await searchCompany("saramin", div.parentNode.querySelector("a"));
+            else if (div.parentNode && div.nextElementSibling.matches(SELECTOR_JV_HEADER))
+                await searchCompany("saramin", div);
         } else {
             await searchCompany("wanted", div.parentNode);
         }
@@ -201,11 +218,11 @@ const addSearchBar = async (action) => {
 
         let compName = await findCompNameByLi(action);
 
-        if (compName != null && compName != undefined && compName != "") {
+        if (compName) {
             compName = await regexName(compName);
             //데이터 있으면
             let exist = await getStorageData(compName);
-            if (exist[compName] != undefined) {
+            if (exist[compName]) {
                 await addCompInfo(content, exist[compName]);
             } else {
                 //데이터 없으면 검색 버튼
@@ -221,19 +238,45 @@ const addSearchBar = async (action) => {
     }
 };
 
-const addSearchBarSaramin = async (action) => {
+const addSearchBarSaramin = async (initial, type) => {
+    let isExist = true;
     //a 태그
-    if (!action.nextElementSibling.querySelector("div.search_company_saramin")) {
+    if (type == "after") {
+        if (initial.nextElementSibling.matches("div.search_company_saramin")) {
+            isExist = true;
+        } else {
+            isExist = false;
+        }
+    } else if (type == "before") {
+        console.log(initial);
+
+        if (
+            initial.previousElementSibling &&
+            initial.previousElementSibling.matches("div.search_company_saramin")
+        ) {
+            isExist = true;
+        } else {
+            isExist = false;
+        }
+    }
+
+    if (isExist == false) {
         const content = document.createElement("div");
         content.className = "search_company_saramin";
-        let compName = await findCompNameBySpan(action);
+        let compName = "";
 
-        if (compName != null && compName != undefined && compName != "") {
+        if (type == "after") {
+            compName = await findCompName(initial, SELECTOR_SPAN);
+        } else if (type == "before") {
+            compName = await findCompName(initial, SELECTOR_JV_TITLE);
+        }
+
+        if (compName) {
             compName = await regexName(compName);
             //데이터 있으면
             let exist = await getStorageData(compName);
             if (exist[compName] != undefined) {
-                addCompInfo(content, exist[compName]);
+                await addCompInfo(content, exist[compName]);
             } else {
                 //데이터 없으면 검색 버튼
                 const btn = document.createElement("button");
@@ -243,15 +286,21 @@ const addSearchBarSaramin = async (action) => {
                 content.append(btn);
             }
 
-            action.after(content);
+            if (type == "after") {
+                initial.after(content);
+            } else if (type == "before") {
+                initial.before(content);
+            }
         }
     }
 };
 
+// document.querySelector("body").addEventListener("click", async (event) => {
+
 //wanted 됨
 //background에서 메세지 날리면 해당되는 액션 실행
 //job 공고 밑에 돋보기 혹은 이미 검색한 적 있는 회사 정보 표시
-chrome.runtime.onMessage.addListener(function (msg) {
+chrome.runtime.onMessage.addListener(async function (msg) {
     if (msg.action === "wanted") {
         console.log("wanted");
         //.body
@@ -266,11 +315,21 @@ chrome.runtime.onMessage.addListener(function (msg) {
             }
         }
     } else if (msg.action === "saramin") {
+        // console.log("saramin");
         const jobList = document.querySelectorAll("div.list_item");
+        //job_list
         if (jobList.length > 0) {
             jobList.forEach((job) => {
                 const compA = job.querySelector("div.company_nm").querySelector("a");
-                addSearchBarSaramin(compA);
+                addSearchBarSaramin(compA, "after");
+            });
+        }
+
+        //사람인 공고 상세
+        const jobRelay = document.querySelectorAll(SELECTOR_JV_HEADER);
+        if (jobRelay.length > 0) {
+            jobRelay.forEach((job) => {
+                addSearchBarSaramin(job, "before");
             });
         }
     }
