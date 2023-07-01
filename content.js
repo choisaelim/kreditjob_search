@@ -173,7 +173,7 @@ document.querySelector("body").addEventListener("click", async (event) => {
     if (target != "") {
         const div = target.parentNode;
         if (div.matches(".search_company_saramin")) {
-            if (div.parentNode && div.parentNode.matches("a"))
+            if (div.previousElementSibling && div.previousElementSibling.matches("a"))
                 await searchCompany("saramin", div.parentNode.querySelector("a"));
             else if (div.parentNode && div.nextElementSibling.matches(SELECTOR_JV_HEADER))
                 await searchCompany("saramin", div);

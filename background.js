@@ -32,6 +32,10 @@ const wantedUrl = [
     // "https://.*.wanted.co.kr/matched.*",
     "https://.*.wanted.co.kr/api/chaos/recruit.*",
 ];
+const saraminURL = [
+    "https://.*.saramin.co.kr/zf_user/jobs/list/job-category.*",
+    "https://.*.saramin.co.kr/zf_user/jobs/relay/view-ajax.*",
+];
 const matchedUrl = (url, urlArry) => {
     let result = false;
     urlArry.forEach((el) => {
@@ -48,10 +52,7 @@ chrome.webRequest.onCompleted.addListener((details) => {
         chrome.tabs.sendMessage(details.tabId, {
             action: "wanted",
         });
-    } else if (
-        details.url.match("https://.*.saramin.co.kr/zf_user/jobs/relay/view-ajax.*") &&
-        details.tabId != undefined
-    ) {
+    } else if (matchedUrl(details.url, saraminURL) && details.tabId != undefined) {
         console.log(details.url);
         // debugger;
         chrome.tabs.sendMessage(details.tabId, {
@@ -69,25 +70,22 @@ chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
             chrome.tabs.sendMessage(details.tabId, {
                 action: "wanted",
             });
-        } else if (
-            details.url.match("https://.*.saramin.co.kr/zf_user/jobs/list/.*") &&
-            details.tabId != undefined
-        ) {
+        } else if (matchedUrl(details.url, saraminURL) && details.tabId != undefined) {
             chrome.tabs.sendMessage(details.tabId, {
                 action: "saramin",
             });
         }
     }
 
-    if (
-        details.url.match("https://.*.saramin.co.kr/zf_user/jobs/list/.*") &&
-        details.tabId != undefined
-    ) {
-        console.log(datails.url);
-        chrome.tabs.sendMessage(details.tabId, {
-            action: "saramin",
-        });
-    }
+    // if (
+    //     details.url.match("https://.*.saramin.co.kr/zf_user/jobs/list/.*") &&
+    //     details.tabId != undefined
+    // ) {
+    //     console.log(datails.url);
+    //     chrome.tabs.sendMessage(details.tabId, {
+    //         action: "saramin",
+    //     });
+    // }
 });
 // chrome.webNavigation.onTabReplaced.addListener((browserActivityState) => {
 //     console.log(browserActivityState);
