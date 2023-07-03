@@ -173,10 +173,12 @@ document.querySelector("body").addEventListener("click", async (event) => {
     if (target != "") {
         const div = target.parentNode;
         if (div.matches(".search_company_saramin")) {
-            if (div.previousElementSibling && div.previousElementSibling.matches("a"))
-                await searchCompany("saramin", div.parentNode.querySelector("a"));
-            else if (div.parentNode && div.nextElementSibling.matches(SELECTOR_JV_HEADER))
+            //상세 공고 페이지
+            if (div.nextElementSibling && div.nextElementSibling.matches(SELECTOR_JV_HEADER))
                 await searchCompany("saramin", div);
+            //공고 목록 페이지
+            else if (div.previousElementSibling && div.previousElementSibling.matches("a"))
+                await searchCompany("saramin", div.parentNode.querySelector("a"));
         } else {
             await searchCompany("wanted", div.parentNode);
         }
